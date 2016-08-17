@@ -37,5 +37,9 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>serial</run_depend>
   <run_depend>tf</run_depend>
+  
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>message_runtime</run_depend>
 
 </package>

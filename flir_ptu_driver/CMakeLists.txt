@@ -1,12 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(flir_ptu_driver)
 
-find_package(catkin REQUIRED COMPONENTS actionlib diagnostic_updater roscpp roslaunch roslint rospy serial sensor_msgs tf)
+find_package(catkin REQUIRED COMPONENTS actionlib diagnostic_updater roscpp roslaunch roslint rospy serial sensor_msgs tf
+  std_msgs message_generation)
 find_package(Boost REQUIRED)
+
+add_message_files(
+  FILES
+  ptuAsciiCmd.msg
+)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
    LIBRARIES flir_ptu_driver
-   CATKIN_DEPENDS sensor_msgs serial
+   CATKIN_DEPENDS sensor_msgs serial message_runtime
 )
 
 ## Specify additional locations of header files

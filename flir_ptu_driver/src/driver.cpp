@@ -217,7 +217,7 @@ std::string PTU::sendCommand(std::string command)
   ROS_DEBUG_STREAM("TX: " << command);
   int length  = ptuReadline(buffer, PTU_BUFFER_LEN, "\n");
   ROS_DEBUG_STREAM("RX: " << buffer);
-  //ROS_INFO_STREAM("[PTU::sendCommand] TX: " << command << " RX (length=" << length << ") ["  << buffer << "]");
+  ROS_INFO_STREAM("[PTU::sendCommand] TX: " << command << " RX (length=" << length << ") ["  << buffer << "]");
   return buffer;
 }
 
@@ -375,7 +375,10 @@ bool PTU::setSpeed(char type, float pos)
 
   if (buffer.empty() || buffer[0] != '*')
   {
-    ROS_ERROR("Error setting pan-tilt speed\n");
+    //ROS_ERROR("Error setting pan-tilt speed\n");
+    ROS_ERROR("Pan Tilt Speed Value out of Range: %c %f(%d) (%d-%d)\n",
+              type, pos, count, (type == PTU_TILT ? TSMin : PSMin), (type == PTU_TILT ? TSMax : PSMax));
+    ROS_ERROR_STREAM("Error setting pan-tilt speed. Response [" << buffer << "]");
     return false;
   }
 

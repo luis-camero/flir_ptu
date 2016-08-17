@@ -85,6 +85,13 @@ public:
   size_t  ptuRead (std::string &buffer, size_t size = 1);
   void ptuFlush(); // flush, if a tty
   size_t available (); /*! Return the number of characters in the buffer. */
+  
+  /** Sends a string to the PTU
+   *
+   * \param command string to be sent
+   * \return response string from unit.
+   */
+  std::string sendCommand(std::string command);
 
   /**
    * \param type 'p' or 't'
@@ -202,12 +209,6 @@ private:
   int PSMax;  ///< Max Pan Speed in Counts/second
 
 protected:
-  /** Sends a string to the PTU
-   *
-   * \param command string to be sent
-   * \return response string from unit.
-   */
-  std::string sendCommand(std::string command);
 
   ConnectType connection_type_;
   bool connected_;

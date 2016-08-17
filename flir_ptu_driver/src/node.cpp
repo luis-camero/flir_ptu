@@ -33,6 +33,7 @@
 #include <flir_ptu_driver/driver.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <flir_ptu_driver/ptuAsciiCmd.h>
 
 #include <string>
 
@@ -58,6 +59,7 @@ public:
 
   // Callback Methods
   void cmdCallback(const sensor_msgs::JointState::ConstPtr& msg);
+  void ptuAsciiCmdCallback(const ptuAsciiCmd::ConstPtr& msg);
 
   void produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat);
 
@@ -67,6 +69,7 @@ protected:
   ros::NodeHandle m_node;
   ros::Publisher  m_joint_pub;
   ros::Subscriber m_joint_sub;
+  ros::Subscriber m_ascii_sub;
 
   std::string m_joint_name_prefix;
   ConnectType m_connection_type; // connection is either tty or tcp
@@ -110,6 +113,7 @@ void Node::connect()
   int32_t baud;
   std::ostringstream ss;
   std::string connection_type_string;
+  std::string mode;
   std::string ip_addr;
   int32_t tcp_port;
 
@@ -117,6 +121,7 @@ void Node::connect()
   ros::NodeHandle nh("~");
 
   ros::param::param<std::string>("/ptu/ptu_driver/connection_type", connection_type_string, "tty");
+  ros::param::param<std::string>("/ptu/ptu_driver/ptu_control_mode", mode, "i");
 
   if (!strcmp("tcp", connection_type_string.c_str())) {
 	  m_connection_type = tcp;
@@ -152,7 +157,7 @@ void Node::connect()
   }
   catch (serial::IOException& e)
   {
-    ROS_ERROR_STREAM("Unable to open connection " << ss);
+    ROS_ERROR_STREAM("Unable to open connection " << ss.str());
     return;
   }
 
@@ -160,7 +165,7 @@ void Node::connect()
 
   if (!m_pantilt->initialize())
   {
-    ROS_ERROR_STREAM("Could not initialize FLIR PTU on " << ss);
+    ROS_ERROR_STREAM("Could not initialize FLIR PTU on " << ss.str());
     disconnect();
     return;
   }
@@ -179,6 +184,10 @@ void Node::connect()
   m_node.setParam("max_pan_speed", m_pantilt->getMaxSpeed(PTU_PAN));
   m_node.setParam("pan_step", m_pantilt->getResolution(PTU_PAN));
 
+  if (strcmp("i", mode.c_str())) { // independent speed control mode not wanted
+    m_pantilt->setMode('v'); // set speed control mode to pure velocity mode
+  }
+
   // Publishers : Only publish the most recent reading
   m_joint_pub = m_node.advertise
                 <sensor_msgs::JointState>("state", 1);
@@ -186,6 +195,7 @@ void Node::connect()
   // Subscribers : Only subscribe to the most recent instructions
   m_joint_sub = m_node.subscribe
                 <sensor_msgs::JointState>("cmd", 1, &Node::cmdCallback, this);
+  m_ascii_sub = m_node.subscribe <ptuAsciiCmd>("asciiCmd", 1, &Node::ptuAsciiCmdCallback, this);
 }
 
 /** Disconnect */
@@ -219,6 +229,17 @@ void Node::cmdCallback(const sensor_msgs::JointState::ConstPtr& msg)
   m_pantilt->setPosition(PTU_TILT, tilt);
   m_pantilt->setSpeed(PTU_PAN, panspeed);
   m_pantilt->setSpeed(PTU_TILT, tiltspeed);
+}
+
+/** Callback for getting new Goal JointState */
+void Node::ptuAsciiCmdCallback(const ptuAsciiCmd::ConstPtr& msg)
+{
+  ROS_INFO_STREAM("ptuAsciiCmdCallback(" << msg->ptu_cmd_string << ")");
+
+  if (!ok()) return;
+
+  std::string result = m_pantilt->sendCommand(msg->ptu_cmd_string);
+  ROS_INFO_STREAM("ptuAsciiCmdCallback() result=[" << result << "]");
 }
 
 void Node::produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat)
