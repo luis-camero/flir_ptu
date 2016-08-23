@@ -257,7 +257,7 @@ void Node::testPanTilt(void)
   char pt;
   if((++loopCnt % 200) == 75) {
     pt = 'p';
-    radian = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) / 2.0;
+    radian = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) / 1.0;
     m_pantilt->setPosition(pt, radian);
     count = static_cast<int>(radian / m_pantilt->getResolution(pt));
     ROS_INFO_STREAM("NODE::testPanTilt] PTU set pan " << pt << count);
@@ -265,7 +265,7 @@ void Node::testPanTilt(void)
   else if((loopCnt % 200) == 175) {
      pt = 't';
      radian = -1.0 * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-     m_pantilt->setPosition(pt, -radian / 4.0);
+     m_pantilt->setPosition(pt, -radian / 2.0);
      count = static_cast<int>(radian / m_pantilt->getResolution(pt));
      ROS_INFO_STREAM("NODE::testPanTilt] PTU set tilt " << pt << count);
   }
