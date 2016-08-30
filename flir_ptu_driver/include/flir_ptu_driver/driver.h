@@ -85,6 +85,7 @@ public:
   size_t  ptuRead (std::string &buffer, size_t size = 1);
   void ptuFlush(); // flush, if a tty
   size_t available (); /*! Return the number of characters in the buffer. */
+  bool getPosSpeed(double &pan, double &tilt, double &panspeed, double &tiltspeed);
   
   /** Sends a string to the PTU
    *

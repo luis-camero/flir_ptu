@@ -281,25 +281,31 @@ void Node::spinCallback(const ros::TimerEvent&)
   if (!ok()) return;
 
   // Read Position & Speed
+  /*
   double pan  = m_pantilt->getPosition(PTU_PAN);
   double tilt = m_pantilt->getPosition(PTU_TILT);
-
   double panspeed  = m_pantilt->getSpeed(PTU_PAN);
   double tiltspeed = m_pantilt->getSpeed(PTU_TILT);
+  */
+  double pan, tilt, panspeed, tiltspeed;
+  bool result = m_pantilt->getPosSpeed(pan, tilt, panspeed, tiltspeed);
 
-  // Publish Position & Speed
-  sensor_msgs::JointState joint_state;
-  joint_state.header.stamp = ros::Time::now();
-  joint_state.name.resize(2);
-  joint_state.position.resize(2);
-  joint_state.velocity.resize(2);
-  joint_state.name[0] = m_joint_name_prefix + "pan";
-  joint_state.position[0] = pan;
-  joint_state.velocity[0] = panspeed;
-  joint_state.name[1] = m_joint_name_prefix + "tilt";
-  joint_state.position[1] = tilt;
-  joint_state.velocity[1] = tiltspeed;
-  m_joint_pub.publish(joint_state);
+  if(result == true)
+  {
+    // Publish Position & Speed
+    sensor_msgs::JointState joint_state;
+    joint_state.header.stamp = ros::Time::now();
+    joint_state.name.resize(2);
+    joint_state.position.resize(2);
+    joint_state.velocity.resize(2);
+    joint_state.name[0] = m_joint_name_prefix + "pan";
+    joint_state.position[0] = pan;
+    joint_state.velocity[0] = panspeed;
+    joint_state.name[1] = m_joint_name_prefix + "tilt";
+    joint_state.position[1] = tilt;
+    joint_state.velocity[1] = tiltspeed;
+    m_joint_pub.publish(joint_state);
+  }
 
   m_updater->update();
   

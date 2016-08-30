@@ -30,16 +30,22 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/regex.hpp>
+//#include <boost/spirit.hpp> // This looks promising for parsing input
+
 #include <flir_ptu_driver/driver.h>
 #include <serial/serial.h>
 #include <ros/console.h>
 
 #include <math.h>
 #include <string>
+#include <sstream>
 #include <sys/ioctl.h>
+//#include <regex>
 
 using boost::lexical_cast;
 using namespace std;
+
 
 namespace flir_ptu_driver
 {
@@ -214,9 +220,9 @@ std::string PTU::sendCommand(std::string command)
 {
   std::string buffer;
   ptuWrite(command);
-  ROS_DEBUG_STREAM("TX: " << command);
+  //ROS_DEBUG_STREAM("TX: " << command);
   int length  = ptuReadline(buffer, PTU_BUFFER_LEN, "\n");
-  ROS_DEBUG_STREAM("RX: " << buffer);
+  //ROS_DEBUG_STREAM("RX: " << buffer);
   ROS_INFO_STREAM("[PTU::sendCommand] TX: " << command << " RX (length=" << length << ") ["  << buffer << "]");
   return buffer;
 }
@@ -281,6 +287,40 @@ int PTU::getLimit(char type, char limType)
 
   return parseResponse<int>(buffer);
 }
+
+bool PTU::getPosSpeed(double &pan, double &tilt, double &panspeed, double &tiltspeed)
+{
+  std::string buffer = sendCommand("bt\n");
+
+  if (buffer.length() < 10 || buffer[0] != '*')
+  {
+    ROS_ERROR_STREAM("Error getting Pos/Speed, return=[" << buffer << "]");
+    return false;
+  }
+  
+   
+  // Now Parse the Command's return string and determine if useful
+  // BT command, example  "* 327,-51,354,349,4197449728"
+  static const boost::regex btRegex ( "\\* (-*\\d+\\,){4}(-*\\d+)" );
+  //regex btPattern(btRegex, regex_constants::grep);
+
+  if(boost::regex_match(buffer, btRegex))
+  {
+    std::stringstream sstm(buffer); // convert to a stringstream
+    int n;
+    char c;
+    sstm.ignore(); // skip the '*'
+    sstm >> n; pan = n * getResolution('p'); // get int value from sstm and assign to double
+    sstm.ignore(); // skip the ','
+    sstm >> n; tilt = n * getResolution('t');
+    sstm.ignore(); // skip the ','
+    sstm >> n; panspeed = n * getResolution('p');
+    sstm.ignore(); // skip the ','
+    sstm >> n; tiltspeed = n * getResolution('t');
+    return true;
+  }
+  return false;
+}    
 
 
 // get position in radians
