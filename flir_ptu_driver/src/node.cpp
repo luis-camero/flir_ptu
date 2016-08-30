@@ -195,7 +195,7 @@ void Node::connect()
   // Subscribers : Only subscribe to the most recent instructions
   m_joint_sub = m_node.subscribe
                 <sensor_msgs::JointState>("cmd", 1, &Node::cmdCallback, this);
-  m_ascii_sub = m_node.subscribe <ptuAsciiCmd>("asciiCmd", 1, &Node::ptuAsciiCmdCallback, this);
+  m_ascii_sub = m_node.subscribe <ptuAsciiCmd>("asciiCmd", 10, &Node::ptuAsciiCmdCallback, this);
 }
 
 /** Disconnect */
