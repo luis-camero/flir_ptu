@@ -234,12 +234,12 @@ void Node::cmdCallback(const sensor_msgs::JointState::ConstPtr& msg)
 /** Callback for getting new Goal JointState */
 void Node::ptuAsciiCmdCallback(const ptuAsciiCmd::ConstPtr& msg)
 {
-  ROS_INFO_STREAM("ptuAsciiCmdCallback(" << msg->ptu_cmd_string << ")");
+  ROS_DEBUG_STREAM("ptuAsciiCmdCallback(" << msg->ptu_cmd_string << ")");
 
   if (!ok()) return;
 
   std::string result = m_pantilt->sendCommand(msg->ptu_cmd_string);
-  ROS_INFO_STREAM("ptuAsciiCmdCallback() result=[" << result << "]");
+  ROS_DEBUG_STREAM("ptuAsciiCmdCallback() result=[" << result << "]");
 }
 
 void Node::produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat)

@@ -223,7 +223,7 @@ std::string PTU::sendCommand(std::string command)
   //ROS_DEBUG_STREAM("TX: " << command);
   int length  = ptuReadline(buffer, PTU_BUFFER_LEN, "\n");
   //ROS_DEBUG_STREAM("RX: " << buffer);
-  ROS_INFO_STREAM("[PTU::sendCommand] TX: " << command << " RX (length=" << length << ") ["  << buffer << "]");
+  //ROS_DEBUG_STREAM("[PTU::sendCommand] TX: " << command << " RX (length=" << length << ") ["  << buffer << "]");
   return buffer;
 }
 
